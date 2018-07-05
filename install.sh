@@ -1,10 +1,10 @@
 #!/bin/sh
 
-
-initvim="$HOME/.config/nvim/init.vim"
-plug="$HOME/.local/share/nvim/plugged" 
-ohmyzsh="$HOME/.oh-my-zsh"
-
+INITVIM_PATH="$HOME/.config/nvim"
+INITVIM="$HOME/.config/nvim/init.vim"
+PLUG="$HOME/.local/share/nvim/plugged" 
+OHMYZSH="$HOME/.oh-my-zsh"
+SCRIPT_PATH=$( cd "$(dirname "$0")" ; pwd )
 
 
 : '-----------------------homebrew-----------------------'
@@ -16,26 +16,6 @@ else
 fi
 
 : '------------------------------------------------------'
-
-
-
-: '-----------------------molokai------------------------'
-
-if [ ! -d ~/.vim ]; then
-	mkdir ~/.vim
-fi
-
-if [ ! -d ~/.vim/colors ]; then
-	echo "Installing molokai.."
-	git clone https://github.com/tomasr/molokai.git
-	cp molokai/colors/ ~/.vim/colors
-	rm -r molokai/
-else
-	echo "molokai already exists."
-fi
-
-: '------------------------------------------------------'
-
 
 
 : '-------------------------zsh--------------------------'
@@ -51,7 +31,7 @@ else
 fi
 
 # Download oh my zsh
-if [ ! -d "$ohmyzsh" ]; then
+if [ ! -d "$OHMYZSH" ]; then
 	echo "Installing ohmyzsh.."
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 else
@@ -80,36 +60,62 @@ fi
 : '------------------------------------------------------'
 
 
+: '-----------------------init.vim-----------------------'
+
+if [ ! -d "$INITVIM_PATH" ]; then
+	echo "Creating INITVIM_PATH"
+	mkdir -p "$INITVIM_PATH"
+fi
+
+# copy init.vim
+if [ ! -f "$INITVIM" ]; then
+	echo "Copying init.vim.."
+	cd "${SCRIPT_PATH}"
+	cp init.vim "${INITVIM}"
+else
+	echo "init.vim already exists."
+fi
+
+: '------------------------------------------------------'
+
 
 : '-----------------------neovim-------------------------'
 
 # install nvim
 if ! brew list -1 | grep -q "neovim" ; then
 	echo "Installing neovim.."
-	brew install neovim
+	brew update
+	brew upgrade neovim
+	brew install --HEAD neovim
 
-	if [ ! -x "$(command -v pip2)" ]; then
-		pip2 --no-cache-dir install neovim
-	fi
-	if [ ! -x "$(command -v pip3)" ]; then
-		pip3 --no-cache-dir install neovim
-	fi
-
-	NVIM_PATH=$(which nvim)
-	echo "alias vi='$NVIM_PATH'" >> ~/.config/nvim/init.vim
+	NVIM_PATH="$(which nvim)"
+	echo "alias vi='${NVIM_PATH}'" >> ~/.zshrc
 else
 	echo "neovim already exists."
 fi
 
+echo "Setting up neovim.."
+if [ ! -x "$(command -v pip2)" ]; then
+	echo "Installing python2 using homewbrew.."
+	brew install python2
+fi
+if [ ! -x "$(command -v pip3)" ]; then
+	echo "Installing python3 using homewbrew.."
+	brew install python3
+fi
+
+sudo pip2 install --upgrade neovim
+sudo pip3 install --upgrade neovim
+
 : '------------------------------------------------------'
-
-
+	
 
 : '-------------------------plug-------------------------'
 
-if [ ! -d "$plug" ]; then
+if [ ! -d "$PLUG" ]; then
 	# install plug: nvim package manager
 	echo "Installing plug.."
+	mkdir -p "${PLUG}"
 	curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
 		https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
 		&& nvim -c :PlugInstall -c qa
@@ -120,18 +126,6 @@ fi
 : '------------------------------------------------------'
 
 
-
-: '-----------------------init.vim-----------------------'
-
-# copy init.vim
-if [ ! -f "$initvim" ]; then
-	echo "Copying init.vim.."
-	cp init.vim ~/.config/nvim/init.vim
-else
-	echo "init.vim already exists."
-fi
-
-: '------------------------------------------------------'
-
+echo "Finished!"
 
 
