@@ -25,7 +25,6 @@ if [ ! -x "$(command -v zsh)" ]; then
 	echo 'Installing zsh..'
 
 	brew install zsh     # zsh 다운로드
-	chsh -s `which zsh`  # 현재 쉘을 zsh 쉘로 바꿈
 else
 	echo "zsh already exists."
 fi
@@ -124,6 +123,9 @@ else
 fi
 
 : '------------------------------------------------------'
+
+chsh -s `which zsh`  # 현재 쉘을 zsh 쉘로 바꿈
+source ~/.zshrc
 
 
 echo "Finished!"
